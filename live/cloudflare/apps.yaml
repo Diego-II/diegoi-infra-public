@@ -1,0 +1,25 @@
+# Apps on winbox exposed as <name>.example.com through the Cloudflare Tunnel.
+# Each one sits behind Google login; only the listed emails get in.
+# Add/edit an entry, then apply live/cloudflare.
+#
+#   <name>:
+#     port: <local port on winbox (WSL)>
+#     allowed_emails: [<google account>, ...]
+#     mcp: true   # optional: Access Managed OAuth so MCP clients (Claude, etc.) can log in with the same Google allow-list
+
+app1:
+  port: 3000
+  allowed_emails:
+    - owner@example.com
+    - friend1@example.com
+    - friend2@example.com
+    - friend3@example.com
+
+app2:
+  port: 8020
+  mcp: true
+  allowed_emails:
+    - owner@example.com
+    - friend1@example.com
+    - friend2@example.com
+    - friend3@example.com

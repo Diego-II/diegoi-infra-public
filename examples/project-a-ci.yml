@@ -1,0 +1,30 @@
+# Example GitHub Actions workflow for the Diego-II/project-a PROJECT repo.
+# Copy this to .github/workflows/deploy.yml in that repo. No AWS secrets needed.
+#
+# Replace <PROJECT_A_DEPLOY_ROLE_ARN> with the `deploy_role_arn` output from
+#   terraform -chdir=live/accounts/project-a output deploy_role_arn
+
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: <PROJECT_A_DEPLOY_ROLE_ARN>
+          aws-region: us-east-1
+      - run: aws sts get-caller-identity   # proves keyless access works
+      # ... your terraform / sst / cdk / deploy steps here.
+      # State backend for this repo (bucket lives in the project-a account):
+      #   bucket = "project-a-tfstate-<project-a-account-id>"

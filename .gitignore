@@ -1,0 +1,23 @@
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+crash.log
+crash.*.log
+*.tfvars
+!*.tfvars.example
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+# Generated single-platform by local init; regenerate multi-platform before
+# committing:  terraform providers lock -platform=linux_amd64 -platform=darwin_arm64
+.terraform.lock.hcl
+.terraform.lock.hcl.tmp
+.terraformrc
+terraform.rc
+
+# Local
+.DS_Store
+.env

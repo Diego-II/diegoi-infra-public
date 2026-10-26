@@ -1,0 +1,62 @@
+name: terraform
+
+# Keyless: assumes the github-actions-infra role in the management account via
+# OIDC. No AWS secrets stored in GitHub. The role is created by
+# live/management-baseline (apply that locally once first).
+
+on:
+  pull_request:
+    paths: ["live/**", "modules/**"]
+  workflow_dispatch:
+    inputs:
+      stack:
+        description: "Stack under live/ to apply (e.g. org, identity-center)"
+        required: true
+      action:
+        description: "plan or apply"
+        required: true
+        default: "plan"
+
+permissions:
+  id-token: write   # required for OIDC
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  TF_IN_AUTOMATION: "true"
+
+jobs:
+  plan:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        stack: [org, identity-center, management-baseline, accounts/project-a]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::111111111111:role/github-actions-infra
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: hashicorp/setup-terraform@v3
+      - name: plan
+        working-directory: live/${{ matrix.stack }}
+        run: |
+          terraform init -input=false
+          terraform plan -input=false -no-color
+
+  dispatch:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::111111111111:role/github-actions-infra
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: hashicorp/setup-terraform@v3
+      - name: ${{ inputs.action }}
+        working-directory: live/${{ inputs.stack }}
+        run: |
+          terraform init -input=false
+          terraform ${{ inputs.action }} -input=false -no-color ${{ inputs.action == 'apply' && '-auto-approve' || '' }}
